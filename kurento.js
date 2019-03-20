@@ -307,43 +307,6 @@ class KurentoProxy {
             });
         });
     }
-
-    _webRtcExec(sessionId, pipeline, webRtcEndpoint, ws, sdpOffer, callback) {
-        if (candidatesQueue[sessionId]) {
-            while (candidatesQueue[sessionId].length) {
-                var candidate = candidatesQueue[sessionId].shift();
-                webRtcEndpoint.addIceCandidate(candidate);
-            }
-        }
-
-        webRtcEndpoint.on('OnIceCandidate', event => {
-            var candidate = kurento.getComplexType('IceCandidate')(event.candidate);
-            ws.send(JSON.stringify({
-                id: 'iceCandidate',
-                candidate: candidate
-            }));
-        });
-
-        webRtcEndpoint.processOffer(sdpOffer, (error, sdpAnswer) => {
-            if (error) {
-                pipeline.release();
-                return callback(error);
-            }
-
-            sessions[sessionId] = {
-                'pipeline': pipeline,
-                'webRtcEndpoint': webRtcEndpoint
-            }
-
-            return callback(null, sdpAnswer);
-        });
-
-        webRtcEndpoint.gatherCandidates(error => {
-            if (error) {
-                return callback(error);
-            }
-        });
-    }
 }
 
 module.exports = {
